@@ -1,0 +1,5 @@
+c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\bin\Debug\worker.exe
+c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\bin\Debug\worker.pdb
+c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\obj\x86\Debug\worker.exe
+c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\obj\x86\Debug\worker.pdb
