@@ -20,10 +20,10 @@ namespace worker  {
             //walkFolders("C:\\Users\\kirbst\\Desktop\\buecher");
 
             
-            sql_connect();
+            sql_dump();
         }
 
-        public static bool sql_connect()
+        public static bool sql_dump()
         {
             bool erg = true;
 
@@ -68,7 +68,7 @@ namespace worker  {
                 foreach (FileInfo fi in di.GetFiles())
                 {
                     //Console.Write(hrs(fi.Length) + " " + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)) + " " + fi.FullName + "  SHA512: [" + Datei2SHA(fi.FullName) + "]" + "  MD5: [" + Datei2MD5(fi.FullName) + "]" + "\r");
-                    Console.Write("ctime: "+fi.CreationTime+"  atime: "+fi.LastAccessTime +"  mtime: "+fi.LastWriteTime+":  " + fi.Name + "\n") ;
+                    Console.Write("ctime: "+fi.CreationTime+"  atime: "+fi.LastAccessTime +"  mtime: "+fi.LastWriteTime+":  " + fi.Name + " L-SHA: " +Datei2SHA(fi.FullName).Length +"\n") ;
                 }
             }
             catch (Exception e)
