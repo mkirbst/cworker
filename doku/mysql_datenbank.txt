@@ -1,0 +1,9 @@
+Primärschlüssel: 
+
+Format: [Zeitstempel]+[Pruefsumme] 
+Begründung: In der Praxis soll der Indexierungsdienst periodisch laufen (zB wöchentlich).
+In dieser Zeit kann die Datei modifiziert werden und weist dann auch eine andere Prüfsumme 
+auf. Über den Zeitstempel kann man in der Datenbank aber dann vor der Neuindexierung alle
+alten Datenstätze verwerfen. Durch die Kombination des Primärschlüssel aus Datum und Prüf-
+summe ist außerdem sichergestellt das es nicht zu Duplikaten oder Überschneidungen in der 
+Datenbank selbst kommt.

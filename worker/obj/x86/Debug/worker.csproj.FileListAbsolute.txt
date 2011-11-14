@@ -5,3 +5,6 @@ c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\obj\x86\Debu
 c:\users\kirbst\documents\visual studio 2010\Projects\worker\worker\obj\x86\Debug\worker.pdb
 C:\Users\kirbst\Documents\Visual Studio 2010\Projects\cworker\worker\obj\x86\Debug\worker.exe
 C:\Users\kirbst\Documents\Visual Studio 2010\Projects\cworker\worker\obj\x86\Debug\worker.pdb
+C:\Users\kirbst\Documents\Visual Studio 2010\Projects\cworker\worker\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\kirbst\Documents\Visual Studio 2010\Projects\cworker\worker\bin\Debug\worker.exe
+C:\Users\kirbst\Documents\Visual Studio 2010\Projects\cworker\worker\bin\Debug\worker.pdb

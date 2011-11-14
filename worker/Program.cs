@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Security.Principal;
+//using MySql.Data.VisualStudio;
+using MySql.Data.MySqlClient;
 
 /** Quellenverzeichnis:
  *  walkFolders:    http://dotnet-snippets.de/dns/rekursiver-verzeichnislauf-SID462.aspx
@@ -15,12 +17,42 @@ namespace worker  {
     class Program    {
         static void Main(string[] args)   {
             //walkFolders("q:\\");
-            walkFolders("C:\\Users\\kirbst\\Desktop\\buecher");
-        
+            //walkFolders("C:\\Users\\kirbst\\Desktop\\buecher");
+
+            
+            sql_connect();
         }
 
-        
-        
+        public static bool sql_connect()
+        {
+            bool erg = true;
+
+            string myConnectionString = "SERVER=localhost;" +
+                                        "DATABASE=test;" +
+                                        "UID=admin;" +
+                                        "PASSWORD=cNtN.5db6!;";
+
+            Console.WriteLine("Versuche Verbindung zu: " + myConnectionString);
+            
+            MySqlConnection connection = new MySqlConnection(myConnectionString);
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM worker";
+            MySqlDataReader Reader;
+            connection.Open();
+            Reader = command.ExecuteReader();
+            while (Reader.Read())  {
+                string row = "";
+                for (int i = 0; i < Reader.FieldCount; i++)
+                    row += Reader.GetValue(i).ToString() + ", ";
+                Console.WriteLine(row);
+            }
+            connection.Close();
+
+
+            Console.WriteLine("Trenne Verbindung...");
+            return erg;
+        }
+
         private static void walkFolders(string Directory)  {
             walkFolders(new DirectoryInfo(Directory));
         }
@@ -35,7 +67,8 @@ namespace worker  {
                 // Alle Dateien durchlaufen
                 foreach (FileInfo fi in di.GetFiles())
                 {
-                    Console.Write(hrs(fi.Length) + " " + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)) + " " + fi.FullName + "  SHA512: [" + Datei2SHA(fi.FullName) + "]" + "  MD5: [" + Datei2MD5(fi.FullName) + "]" + "\r");
+                    //Console.Write(hrs(fi.Length) + " " + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)) + " " + fi.FullName + "  SHA512: [" + Datei2SHA(fi.FullName) + "]" + "  MD5: [" + Datei2MD5(fi.FullName) + "]" + "\r");
+                    Console.Write("ctime: "+fi.CreationTime+"  atime: "+fi.LastAccessTime +"  mtime: "+fi.LastWriteTime+":  " + fi.Name + "\n") ;
                 }
             }
             catch (Exception e)
@@ -84,6 +117,7 @@ namespace worker  {
             string hrsize = "";
             int n = 0, nachkomma = 0;
 
+            /** Annahme: viel mehr kleine als große Dateien */
             while (filebytes > 1024)
             {
                 nachkomma = (int)(filebytes % 1024);
