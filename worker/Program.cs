@@ -27,12 +27,15 @@ namespace worker  {
     
     
     class Program    {
+        static string path = "Q:\\";
+        static string logfilename = "logfile.txt";
         static int gc = 0;
         static long globalsize = 0;
 
         static void Main(string[] args)   {
+            FileWrite(logfilename, DateTime.Now+": Starte Dateiindexierung fuer "+path+"\n\n");
             sql_trunc_table();
-            walkFoldersSql("Q:\\");
+            walkFoldersSql(path);
         }
 
         private static void walkFoldersSql(string DirectorySql)
@@ -67,13 +70,18 @@ namespace worker  {
                     ++lc;
                     MySqlConnection connection = new MySqlConnection(myConnectionString);
                     MySqlCommand command = connection.CreateCommand();
-                    Console.WriteLine(DateTime.Now + ": add Nr." + gc + " [" + hrs(fi.Length) + "/" + hrs(globalsize) + " ges]: " + fi.FullName);
+                    
+                    String output = DateTime.Now + ": add Nr." + gc + " [" + hrs(fi.Length) + "/" + hrs(globalsize) + " ges]: " + fi.FullName;
+                    Console.WriteLine(output);
+                    FileAppend(logfilename, output+"\n");
+                    
                     connection.Open();
-                    command.CommandText = "INSERT INTO `test`.`worker` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + fi.Name + "', '" + fi.FullName + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" + Datei2SHA(fi.FullName) + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" +  UnixTime(fi.LastAccessTime) + "', '" +  UnixTime(fi.CreationTime) + "', '" +  UnixTime(fi.LastWriteTime) + "', '1');";
+                    command.CommandText = "INSERT INTO `test`.`worker` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + fi.Name + "', '" + fi.FullName + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" + Datei2SHA(fi.FullName) + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" + UnixTime(fi.LastAccessTime) + "', '" + UnixTime(fi.CreationTime) + "', '" + UnixTime(fi.LastWriteTime) + "', '1');";
                     MySqlDataReader Reader;
                     Reader = command.ExecuteReader();
                     globalsize += fi.Length;
                     connection.Close();
+                
                 }
                 Console.WriteLine("walkFoldersSql: " + lc + " Zeilen hinzugefuegt.");
             }
@@ -81,6 +89,20 @@ namespace worker  {
             {
                 Console.WriteLine(e.Message);
             }
+        }
+        
+        public static void FileWrite(String sFilename, String sLines)
+        {
+            StreamWriter myFile = new StreamWriter(sFilename);
+            myFile.Write(sLines);
+            myFile.Close();
+        }
+        
+        public static void FileAppend(string sFilename, string sLines)
+        {
+            StreamWriter myFile = new StreamWriter(sFilename, true);
+            myFile.Write(sLines);
+            myFile.Close();
         }
 
         /**get unix timeformat
