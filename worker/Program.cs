@@ -31,7 +31,9 @@ namespace worker  {
             mysql_linux.setDatabase("workerdb");
             mysql_linux.setTable("worker");
             mysql_linux.setUsername("dbworker");
-            mysql_linux.setPassword("Schl8ship");
+            Console.Write("Bitte Passwort eingeben für "+mysql_linux.getDatabase()+"@"+mysql_linux.getHost()+"\n>>> ");
+            //mysql_linux.setPassword(Console.ReadLine());
+            mysql_linux.setPassword(ReadPassword());
 
             
             
@@ -44,7 +46,32 @@ namespace worker  {
             
         }
 
-        
+        /*http://ryepup.unwashedmeme.com/blog/2007/07/05/reading-passwords-from-the-console-in-c/*/
+        public static string ReadPassword()
+        {
+            Stack<string> passbits = new Stack<string>();
+            //keep reading
+            for (ConsoleKeyInfo cki = Console.ReadKey(true); cki.Key != ConsoleKey.Enter; cki = Console.ReadKey(true))
+            {
+                if (cki.Key == ConsoleKey.Backspace)
+                {
+                    //rollback the cursor and write a space so it looks backspaced to the user
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    Console.Write(" ");
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    passbits.Pop();
+                }
+                else
+                {
+                    Console.Write("*");
+                    passbits.Push(cki.KeyChar.ToString());
+                }
+            }
+            string[] pass = passbits.ToArray();
+            Array.Reverse(pass);
+            return string.Join(string.Empty, pass);
+        }
+
         /**get unix timeformat
          */ 
         public static long UnixTime(DateTime filetime)
@@ -100,6 +127,30 @@ namespace worker  {
                 default: hrsize +="B "; break;  //" Byte"; break;
             }
             return hrsize;
+        }
+
+        public static bool mysql_copy_table(Sqlcreds src_sc, Sqlcreds dst_sc)
+        {
+            bool erg = false;
+            Console.WriteLine("mysql_copy_table: Versuche Verbindung zu: " + src_sc.getMysqlConStr());
+            MySqlConnection connection = new MySqlConnection(src_sc.getMysqlConStr());
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO " + dst_sc.getTable() + " SELECT * FROM " + src_sc.getTable() + ";";
+            MySqlDataReader Reader;
+            connection.Open();
+            try
+            {
+                Reader = command.ExecuteReader();
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Tabelle konnte nicht kopiert werden: " + src_sc.getTable());
+            }
+            connection.Close();
+            Console.WriteLine("mysql_copy_table: Trenne Verbindung...");
+
+            return erg; 
         }
 
         public static bool mysql_insert_row(Sqlcreds sc, String filepath)
