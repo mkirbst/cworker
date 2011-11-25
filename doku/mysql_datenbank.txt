@@ -7,3 +7,92 @@ auf. Über den Zeitstempel kann man in der Datenbank aber dann vor der Neuindexie
 alten Datenstätze verwerfen. Durch die Kombination des Primärschlüssel aus Datum und Prüf-
 summe ist außerdem sichergestellt das es nicht zu Duplikaten oder Überschneidungen in der 
 Datenbank selbst kommt.
+
+
+TABELLE IM HAUPTSPEICHER ANLEGEN:
+CREATE TABLE IF NOT EXISTS `memworker` (
+              `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Dateiname',
+              `path` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+              `loc` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Ort ',
+              `size` bigint(14) unsigned NOT NULL COMMENT 'Dateigroesse in Byte',
+              `csum` varchar(129) CHARACTER SET ascii NOT NULL COMMENT 'SHA512-Pruefsumme',
+              `dom` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Benutzerdomaene',
+              `owner` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Eigentuemer der Datei',
+              `group` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Gruppe der datei',
+              `stime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'snapshottime im unixtimeformat',
+              `atime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'accesstime',
+              `ctime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'createtime',
+              `mtime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'modifytime',
+              `dups` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Duplikate',
+              PRIMARY KEY (`path`,`csum`)
+            ) ENGINE=MEMORY DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';
+
+TABELLE NORMAL ANLEGEN:
+CREATE TABLE IF NOT EXISTS `worker` (
+              `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Dateiname',
+              `path` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+              `loc` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Ort ',
+              `size` bigint(14) unsigned NOT NULL COMMENT 'Dateigroesse in Byte',
+              `csum` varchar(129) CHARACTER SET ascii NOT NULL COMMENT 'SHA512-Pruefsumme',
+              `dom` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Benutzerdomaene',
+              `owner` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Eigentuemer der Datei',
+              `group` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Gruppe der datei',
+              `stime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'snapshottime im unixtimeformat',
+              `atime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'accesstime',
+              `ctime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'createtime',
+              `mtime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'modifytime',
+              `dups` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Duplikate',
+              PRIMARY KEY (`path`,`csum`)
+            ) ENGINE=INNODB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';
+
+
+DATENBANKTYP ÄNDERN:
+	ALTER TABLE  `memworker` ENGINE = MEMORY
+
+ALLE DATENSÄTZE KOPIEREN:
+	 INSERT INTO memworker SELECT * FROM worker;
+
+
+/* GLEICHER DATEINAME
+SELECT *
+FROM memworker
+WHERE name
+IN (
+  
+  SELECT name
+  FROM (
+  
+    SELECT name, COUNT( * ) AS count
+    FROM memworker
+    GROUP BY name
+  ) AS t2
+  WHERE count >1
+);
+*/
+
+/* GLEICHE PRUEFSUMME
+SELECT *
+FROM memworker
+WHERE csum
+IN (
+  
+  SELECT csum
+  FROM (
+  
+    SELECT csum, COUNT( * ) AS count
+    FROM memworker
+    GROUP BY csum
+  ) AS t2
+  WHERE count >1
+);
+*/
+
+
+Datenbankencodierung nach UTF8:
+	ALTER TABLE  `memworker` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci
+
+USER ANELEGEN UND BERECHTIGEN:
+ 	CREATE USER 'dbworker'@'localhost' IDENTIFIED BY 'Schl8ship';
+	GRANT ALL PRIVILEGES ON workerdb.* TO 'dbworker'@'localhost';
+	GRANT ALL PRIVILEGES ON workerdb.* TO 'dbworker'@'ba-pc-praktikan.bamberg.local' IDENTIFIED BY 'Schl8ship';
+	SHOW GRANTS FOR 'dbworker'@'localhost';
