@@ -7,6 +7,11 @@ using System.Security.Principal;
 using MySql.Data.MySqlClient;
 using System.Data.SqlClient;//mssql fuer cuso
 
+/**TODO:
+ * -SQL-Exceptions behandeln
+ */ 
+
+
 
 /** Quellenverzeichnis:
  *  walkFolders:    http://dotnet-snippets.de/dns/rekursiver-verzeichnislauf-SID462.aspx
@@ -26,16 +31,7 @@ namespace worker  {
 
         static void Main(string[] args)   {
             //Daten des Sqlserver eintragen, spater per Kommandozeilenparameter/Konfigurationsdatei
-            Sqlcreds mysql_linux = new Sqlcreds();
-            mysql_linux.setHost("53.100.11.229");
-            mysql_linux.setDatabase("workerdb");
-            mysql_linux.setTable("worker");
-            mysql_linux.setUsername("dbworker");
-            Console.Write("Bitte Passwort eingeben für "+mysql_linux.getDatabase()+"@"+mysql_linux.getHost()+"\n>>> ");
-            //mysql_linux.setPassword(Console.ReadLine());
-            mysql_linux.setPassword(ReadPassword());
-
-            
+            Sqlcreds mysql_linux = mysql_get_creds();
             
             //FileWrite(logfilename, DateTime.Now+": Starte Dateiindexierung fuer "+path+"\n\n");
             //mysql_trunc_table(sc);        
@@ -47,6 +43,43 @@ namespace worker  {
         }
 
         /*http://ryepup.unwashedmeme.com/blog/2007/07/05/reading-passwords-from-the-console-in-c/*/
+
+        public static Sqlcreds mysql_get_creds()
+        {
+            Sqlcreds sc = new Sqlcreds();
+
+
+            Console.Write("Hostname: ");
+            sc.setHost(Console.ReadLine());
+            Console.Write("Datenbank: ");
+            sc.setDatabase(Console.ReadLine());
+            Console.Write("Tabelle: ");
+            sc.setTable(Console.ReadLine());
+            Console.Write("Benutzer: ");
+            sc.setUsername(Console.ReadLine());
+            Console.Write("Passwort: ");
+            sc.setPassword(ReadPassword());
+            
+            try
+            {
+                MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
+                MySqlCommand command = connection.CreateCommand();
+                connection.Open();
+                connection.Close();
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                Console.WriteLine("\n\n*******************************************");
+                if (ex.ToString().Contains("Access denied")) Console.WriteLine("FEHLER: Zugriff verweigert für Benutzer " + sc.getUsername());
+                else Console.WriteLine("FEHLER: " + ex);
+               
+            }
+            
+
+            return sc;
+        }
+        
+        
         public static string ReadPassword()
         {
             Stack<string> passbits = new Stack<string>();
@@ -158,7 +191,7 @@ namespace worker  {
             bool erg = true;
 
             
-            Console.WriteLine(": Versuche Verbindung zu: " + sc.getMysqlConStr());
+            Console.WriteLine("mysql_insert_row: Versuche Verbindung zu: " + sc.getMysqlConStr());
 
             MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
