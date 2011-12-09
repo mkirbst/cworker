@@ -30,14 +30,19 @@ namespace worker  {
         static long globalsize = 0;
 
         static void Main(string[] args)   {
+            
             //Daten des Sqlserver eintragen, spater per Kommandozeilenparameter/Konfigurationsdatei
             Sqlcreds mysql_linux = mysql_get_creds();
             
+            //String test = "C:\\test\\text.txt";
+            //Console.WriteLine("Vorher: " + test);
+            //Console.WriteLine("Nachher: " + test.Replace("\\","\\\\"));
+
             //FileWrite(logfilename, DateTime.Now+": Starte Dateiindexierung fuer "+path+"\n\n");
             //mysql_trunc_table(sc);        
-            mysql_drop_table(mysql_linux);
+          //mysql_drop_table(mysql_linux);
             mysql_create_table(mysql_linux);
-            walkFoldersSql(path, mysql_linux);
+          walkFoldersSql(path, mysql_linux);
             //truncmssql();
             
         }
@@ -50,16 +55,30 @@ namespace worker  {
 
 
             Console.Write("Hostname: ");
-            sc.setHost(Console.ReadLine());
-            Console.Write("Datenbank: ");
-            sc.setDatabase(Console.ReadLine());
-            Console.Write("Tabelle: ");
-            sc.setTable(Console.ReadLine());
-            Console.Write("Benutzer: ");
-            sc.setUsername(Console.ReadLine());
-            Console.Write("Passwort: ");
-            sc.setPassword(ReadPassword());
+            //sc.setHost(Console.ReadLine());
+            sc.setHost("53.100.11.229");
             
+            Console.Write("Datenbank: ");
+            //sc.setDatabase(Console.ReadLine());
+            sc.setDatabase("workerdb");
+            
+            Console.Write("Tabelle: ");
+            //sc.setTable(Console.ReadLine());
+            sc.setTable("dbworker");
+            
+            Console.Write("Benutzer: ");
+            //sc.setUsername(Console.ReadLine());
+            sc.setUsername("dbworker");
+
+            Console.Write("Pfad: ");
+            //sc.setPath(Console.ReadLine());
+            sc.setPath("Q:\\");
+
+            Console.Write("Passwort: ");
+            //sc.setPassword(ReadPassword());
+            sc.setPassword("");
+            
+
             try
             {
                 MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
@@ -168,7 +187,7 @@ namespace worker  {
             Console.WriteLine("mysql_copy_table: Versuche Verbindung zu: " + src_sc.getMysqlConStr());
             MySqlConnection connection = new MySqlConnection(src_sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO " + dst_sc.getTable() + " SELECT * FROM " + src_sc.getTable() + ";";
+            command.CommandText = "INSERT INTO " + dst_sc.getTableName() + " SELECT * FROM " + src_sc.getTableName() + ";";
             MySqlDataReader Reader;
             connection.Open();
             try
@@ -178,7 +197,7 @@ namespace worker  {
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine("Tabelle konnte nicht kopiert werden: " + src_sc.getTable());
+                Console.WriteLine("Tabelle konnte nicht kopiert werden: " + src_sc.getTableName());
             }
             connection.Close();
             Console.WriteLine("mysql_copy_table: Trenne Verbindung...");
@@ -198,7 +217,7 @@ namespace worker  {
 
 
 
-            command.CommandText = "INSERT INTO `"+sc.getDatabase()+"`.`"+sc.getTable()+"` (`name`, `path`, `loc`, `size`, `csum`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + "" + "', '"+filepath+"', 'c:', '1234', 'mmmmfc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75', 'm', 'm', CURRENT_TIMESTAMP, '1983-10-10 22:11:02', '1983-01-01 00:11:02', '1983-10-10 22:11:11', '1');";
+            command.CommandText = "INSERT INTO `"+sc.getDatabase()+"`.`"+sc.getTableName()+"` (`name`, `path`, `loc`, `size`, `csum`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + "" + "', '"+filepath+"', 'c:', '1234', 'mmmmfc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75', 'm', 'm', CURRENT_TIMESTAMP, '1983-10-10 22:11:02', '1983-01-01 00:11:02', '1983-10-10 22:11:11', '1');";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
@@ -224,7 +243,7 @@ namespace worker  {
             Console.WriteLine("sql_trunc_table: Versuche Verbindung zu: " + sc.getMysqlConStr());
             MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = "TRUNCATE TABLE " + sc.getTable() + ";";
+            command.CommandText = "TRUNCATE TABLE " + sc.getTableName() + ";";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
@@ -240,7 +259,7 @@ namespace worker  {
             Console.WriteLine("mysql_drop_table: Versuche Verbindung zu: " + sc.getMysqlConStr());
             MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = "DROP TABLE " + sc.getTable() + ";";
+            command.CommandText = "DROP TABLE " + sc.getTableName() + ";";
             MySqlDataReader Reader;
             connection.Open();
             try {
@@ -249,7 +268,7 @@ namespace worker  {
             catch (MySql.Data.MySqlClient.MySqlException ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine("Tabelle konnte nicht geloescht werden: " + sc.getTable());
+                Console.WriteLine("Tabelle konnte nicht geloescht werden: " + sc.getTableName());
             }
             connection.Close();
             Console.WriteLine("mysql_drop_table: Trenne Verbindung...");
@@ -263,7 +282,7 @@ namespace worker  {
             Console.WriteLine("sql_trunc_table: Versuche Verbindung zu: " + sc.getMysqlConStr());
             MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE IF NOT EXISTS `"+sc.getTable()+"` ("+
+            command.CommandText = "CREATE TABLE IF NOT EXISTS `"+sc.getTableName()+"` ("+
               "`name` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Dateiname',"+
               "`path` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"+
               "`loc` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Ort ',"+
@@ -278,7 +297,7 @@ namespace worker  {
               "`mtime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'modifytime',"+
               "`dups` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Duplikate',"+
               "PRIMARY KEY (`path`,`csum`)"+
-            ") ENGINE=MEMORY DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';";
+            ") DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
@@ -297,7 +316,7 @@ namespace worker  {
 
             MySqlConnection connection = new MySqlConnection(sc.getMysqlConStr());
             MySqlCommand command = connection.CreateCommand();
-            command.CommandText = "SELECT * FROM "+sc.getTable()+";";
+            command.CommandText = "SELECT * FROM "+sc.getTableName()+";";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
@@ -316,61 +335,16 @@ namespace worker  {
             return erg;
         }
 
-        /*192.168.1.2 sqluser sqlpassword mydatabase newtable file.csv*/
-        private static void parsecuso(String server, String user, String pass, String db, String table, String file)
-        {
-            int ds = 0;
-            string strConString = "Data Source=" + server + ";Initial Catalog= " + db + ";User Id= " + user + ";Password=" + pass + ";";
-            try
-            {                                                                           /*Encoding vom Betriebssystem holen, fuer Umlaute*/
-                using (StreamReader readFile = new StreamReader(file, System.Text.Encoding.Default))
-                {
-                    string line;
-                    string[] row;
-                    while ((line = readFile.ReadLine()) != null)
-                    {
-                        row = line.Split(';');
-                        if (!(row[0] == "ist Firma"))
-                        {
-                            ds++;
-                            SqlConnection sqlCon = new SqlConnection();
-                            sqlCon.ConnectionString = strConString;
-                            sqlCon.Open();
-                            string strSqlQuery = "INSERT INTO " + table + "(istFirma, VIPFlag, Kundennummer, Vorname, Name, Firmenname, Strasse, PLZ, Ort, Teilnehmer) VALUES ('" + row[0].Replace("'", "") + "', '" + row[1].Replace("'", "") + "', '" + row[2].Replace("'", "") + "', '" + row[3].Replace("'", "") + "', '" + row[4].Replace("'", "") + "', '" + row[5].Replace("'", "") + "', '" + row[6].Replace("'", "") + "', '" + row[7].Replace("'", "") + "', '" + row[8].Replace("'", "") + "', '" + row[9].Replace("'", "") + "')";
-
-                            SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon);
-                            int intCheckQuery = sqlCmd.ExecuteNonQuery();
-                            if (intCheckQuery > 0)
-                            {
-                                if (!(row[4].Equals("")))
-                                    Console.WriteLine(ds + " Kunde: " + row[4] + ", " + row[3]);
-                                else
-                                    Console.WriteLine(ds + " Firma: " + row[5]);
-                            }
-                            else Console.WriteLine("Datensatz konnte nicht hinzugefügt werden");
-                            sqlCon.Close();
-                        }
-
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("FEHLER: " + e.Message);
-            }
-
-        }
-
         private static void mssql_create_table(Sqlcreds sc)
         {
             SqlConnection sqlCon = new SqlConnection(); // Neue Datenbankverbindung
             sqlCon.ConnectionString = sc.getMssqlConStr(); // Connectionstring wird sqlConnection zugewiesen
             sqlCon.Open();  // Verbindung zur Datenbank herstellen
             // Querystring
-            string strSqlQuery = "CREATE TABLE " + sc.getTable() + "(istFirma nvarchar(256), VIPFlag bit, Kundennummer nvarchar(256), Vorname nvarchar(256), Name nvarchar(256), Firmenname nvarchar(256), Strasse nvarchar(256), PLZ nvarchar(256), Ort nvarchar(256), Teilnehmer nvarchar(1024), PRIMARY KEY (Kundennummer),UNIQUE (Kundennummer))";
+            string strSqlQuery = "CREATE TABLE " + sc.getTableName() + "(istFirma nvarchar(256), VIPFlag bit, Kundennummer nvarchar(256), Vorname nvarchar(256), Name nvarchar(256), Firmenname nvarchar(256), Strasse nvarchar(256), PLZ nvarchar(256), Ort nvarchar(256), Teilnehmer nvarchar(1024), PRIMARY KEY (Kundennummer),UNIQUE (Kundennummer))";
             SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon); // SQLCommand
             int intCheckQuery = sqlCmd.ExecuteNonQuery();
-            Console.WriteLine("Tabelle angelegt: " + sc.getTable() + "\n");
+            Console.WriteLine("Tabelle angelegt: " + sc.getTableName() + "\n");
             sqlCon.Close();
         }
 
@@ -383,11 +357,11 @@ namespace worker  {
             // Verbindung zur Datenbank herstellen
             sqlCon.Open();
             // Querystring
-            string strSqlQuery = "SELECT * FROM " + sc.getTable() + ";";
+            string strSqlQuery = "SELECT * FROM " + sc.getTableName() + ";";
             // SQLCommand
             SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon);
             int intCheckQuery = sqlCmd.ExecuteNonQuery();
-            Console.WriteLine("Tabelle ausgelesen: " + sc.getTable());
+            Console.WriteLine("Tabelle ausgelesen: " + sc.getTableName());
             sqlCon.Close();
         }
 
@@ -400,11 +374,11 @@ namespace worker  {
             // Verbindung zur Datenbank herstellen
             sqlCon.Open();
             // Querystring
-            string strSqlQuery = "DROP TABLE " + sc.getTable() + ";";
+            string strSqlQuery = "DROP TABLE " + sc.getTableName() + ";";
             // SQLCommand
             SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon);
             int intCheckQuery = sqlCmd.ExecuteNonQuery();
-            Console.WriteLine("Tabelle geloescht: " + sc.getTable());
+            Console.WriteLine("Tabelle geloescht: " + sc.getTableName());
             sqlCon.Close();
         }
 
@@ -417,11 +391,11 @@ namespace worker  {
             // Verbindung zur Datenbank herstellen
             sqlCon.Open();
             // Querystring
-            string strSqlQuery = "TRUNCATE TABLE "+sc.getTable()+";";
+            string strSqlQuery = "TRUNCATE TABLE "+sc.getTableName()+";";
             // SQLCommand
             SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon);
             int intCheckQuery = sqlCmd.ExecuteNonQuery();
-            Console.WriteLine("Tabelle geleert: "+ sc.getDatabase()+"."+sc.getTable());
+            Console.WriteLine("Tabelle geleert: "+ sc.getDatabase()+"."+sc.getTableName());
             sqlCon.Close();
         }
 
@@ -461,7 +435,7 @@ namespace worker  {
                     FileAppend(logfilename, output + "\n");
 
                     connection.Open();
-                    command.CommandText = "INSERT INTO `" + sc.getDatabase() + "`.`" + sc.getTable() + "` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + fi.Name + "', '" + fi.FullName + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" + Datei2SHA(fi.FullName)/*"--not computed--"*/ + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" + UnixTime(fi.LastAccessTime) + "', '" + UnixTime(fi.CreationTime) + "', '" + UnixTime(fi.LastWriteTime) + "', '1');";
+                    command.CommandText = "INSERT INTO `" + sc.getDatabase() + "`.`" + sc.getTableName() + "` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + fi.Name + "', '" + fi.FullName.Replace("\\", "\\\\") + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" + Datei2SHA(fi.FullName)/*"--not computed--"*/ + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" + UnixTime(fi.LastAccessTime) + "', '" + UnixTime(fi.CreationTime) + "', '" + UnixTime(fi.LastWriteTime) + "', '1');";
                     MySqlDataReader Reader;
                     Reader = command.ExecuteReader();
                     globalsize += fi.Length;

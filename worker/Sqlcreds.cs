@@ -8,11 +8,36 @@ namespace worker
     class Sqlcreds
     {
 
+
+        public Sqlcreds()
+        {
+            ctime = this.getTimestamp();
+            username = "";
+            password = "";
+            host = "";
+            database = "";
+            table = "";
+
+        }
+
+        private string username;
+        private string password;
+        private string host;
+        private string database;
+        private string table;
+        private string ctime;
+        private string path;
+
+        /*
         private string username = "";
         private string password = "";   //todo: gegen pwhash authentifizeren
         private string host     = "";
         private string database = "";
         private string table    = "";
+        private string ctime    = ""; 
+        */
+
+
 
         public void     setUsername(String un)  { username = un;    }
         public string   getUsername()           { return username;  }
@@ -24,6 +49,8 @@ namespace worker
         public string   getDatabase()           { return database;  }
         public void     setTable(String tb)     { table = tb;       }
         public string   getTable()              { return table;     }
+        public void     setPath(String p)       { path = p;         }
+        public string   getPath()               { return path;      }
 
         public String getMysqlConStr() {
             return  "SERVER=" + host + 
@@ -39,5 +66,16 @@ namespace worker
                     ";User Id= " + username + 
                     ";Password=" + password + ";";
         }
+
+        private String getTimestamp()
+        {
+            return DateTime.Now.ToString("yyyyMMddHHmmss");
+        }
+
+        public string getTableName()
+        {
+            return "snapshot_"+path+"_"+ctime;
+        }
+    
     }
 }

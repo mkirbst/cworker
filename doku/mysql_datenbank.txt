@@ -85,7 +85,22 @@ IN (
   ) AS t2
   WHERE count >1
 );
+
+SELECT path 
+FROM dbworkerino m 
+WHERE (
+	SELECT count(*) 
+	FROM dbworkerino 
+	WHERE csum = m.csum
+) >1;
+
+select csum, path from dbworkerino group by csum having count(*) > 1 ORDER BY csum;
+
 */
+
+
+
+
 
 
 Datenbankencodierung nach UTF8:
