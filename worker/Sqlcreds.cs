@@ -7,8 +7,6 @@ namespace worker
 {
     class Sqlcreds
     {
-
-
         public Sqlcreds()
         {
             ctime = this.getTimestamp();
@@ -16,7 +14,18 @@ namespace worker
             password = "";
             host = "";
             database = "";
-            table = "";
+            table = "snapshot_" + path + "_" + ctime;
+
+        }
+
+        public Sqlcreds(String tName)
+        {
+            ctime = this.getTimestamp();
+            username = "";
+            password = "";
+            host = "";
+            database = "";
+            table = tName;
 
         }
 
@@ -27,17 +36,6 @@ namespace worker
         private string table;
         private string ctime;
         private string path;
-
-        /*
-        private string username = "";
-        private string password = "";   //todo: gegen pwhash authentifizeren
-        private string host     = "";
-        private string database = "";
-        private string table    = "";
-        private string ctime    = ""; 
-        */
-
-
 
         public void     setUsername(String un)  { username = un;    }
         public string   getUsername()           { return username;  }
@@ -74,7 +72,8 @@ namespace worker
 
         public string getTableName()
         {
-            return "snapshot_"+path+"_"+ctime;
+            return "test";
+            //return "snapshot_"+path+"_"+ctime;
         }
     
     }

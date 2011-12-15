@@ -1,3 +1,29 @@
+- Snapshot-Tabelle aller Dateien: jedes We 
+
+- Duplikattabelle zum Snapshot: nur csum, path, path ist primarykey:
+	INSERT INTO `duplicates_Q:\_20111209154352` 
+		SELECT DISTINCT csum,path 
+		FROM `snapshot_Q:\_20111209154352` 
+		GROUP BY csum 
+		HAVING COUNT(*) > 1 
+		ORDER BY csum;
+
+
+ALLE DUPLIKATE AUSGEBEN, ALSO JEDES EXEMPLAR DAS EIN DUPLIKAT IST:
+SELECT files.ctime, files.csum, files.path, files.size, files.owner, files.dom 
+FROM files, dups 
+WHERE files.csum = dups.csum 
+ORDER BY csum;
+
+Tabellenstruktur:
+CREATE TABLE IF NOT EXISTS `duplicates_Q:\_20111209154352` (
+  `path` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `csum` varchar(129) CHARACTER SET ascii NOT NULL COMMENT 'SHA512-Pruefsumme',
+  PRIMARY KEY (`path`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Duplikate';
+
+
+
 Primärschlüssel: 
 
 Format: [Zeitstempel]+[Pruefsumme] 

@@ -76,7 +76,7 @@ namespace worker  {
 
             Console.Write("Passwort: ");
             //sc.setPassword(ReadPassword());
-            sc.setPassword("");
+            sc.setPassword("Schl8ship");
             
 
             try
@@ -275,6 +275,7 @@ namespace worker  {
             return erg;
         }
 
+        /*INODB: performant, benutzt transaktionen*/
         public static bool mysql_create_table(Sqlcreds sc)
         {   
             bool erg = true;
@@ -297,7 +298,7 @@ namespace worker  {
               "`mtime` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'modifytime',"+
               "`dups` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Duplikate',"+
               "PRIMARY KEY (`path`,`csum`)"+
-            ") DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';";
+            ") ENGINE=INODB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='workertable';";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
