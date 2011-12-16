@@ -53,7 +53,9 @@ namespace worker  {
         {
             Sqlcreds sc = new Sqlcreds();
 
-
+            /* Anmerkung: Zugriffsdaten im Testbetrieb hardcodiert,
+             * später Auslagerung in Konfigurationsdatei/Registry geplant
+             */
             Console.Write("Hostname: ");
             //sc.setHost(Console.ReadLine());
             sc.setHost("53.100.11.229");
@@ -76,7 +78,7 @@ namespace worker  {
 
             Console.Write("Passwort: ");
             //sc.setPassword(ReadPassword());
-            sc.setPassword("Schl8ship");
+            sc.setPassword("");
             
 
             try
@@ -173,10 +175,10 @@ namespace worker  {
                 case 1: hrsize += "KB"; break;  // " KiloByte"; break;
                 case 2: hrsize += "MB"; break;  // " MegaByte"; break;
                 case 3: hrsize += "GB"; break;  // " GigaByte"; break;
-                case 4: hrsize += "TB"; break;  //" TerraByte"; break;
-                case 5: hrsize += "PB"; break;  //" PetaByte"; break;
-                case 6: hrsize += "EB"; break;  //" ExaByte"; break; /*long: file.attrs can be max. 9 exabyte*/
-                default: hrsize +="B "; break;  //" Byte"; break;
+                case 4: hrsize += "TB"; break;  // " TerraByte"; break;
+                case 5: hrsize += "PB"; break;  // " PetaByte"; break;
+                case 6: hrsize += "EB"; break;  // " ExaByte"; break; /*long: file.attrs can be max. 9 exabyte*/
+                default: hrsize +="B "; break;  // " Byte"; break;
             }
             return hrsize;
         }
@@ -216,8 +218,11 @@ namespace worker  {
             MySqlCommand command = connection.CreateCommand();
 
 
-
-            command.CommandText = "INSERT INTO `"+sc.getDatabase()+"`.`"+sc.getTableName()+"` (`name`, `path`, `loc`, `size`, `csum`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + "" + "', '"+filepath+"', 'c:', '1234', 'mmmmfc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75', 'm', 'm', CURRENT_TIMESTAMP, '1983-10-10 22:11:02', '1983-01-01 00:11:02', '1983-10-10 22:11:11', '1');";
+            //Testdaten
+            command.CommandText = "INSERT INTO `"+sc.getDatabase()+"`.`"
+                +sc.getTableName()+"` (`name`, `path`, `loc`, `size`, `csum`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" 
+                + "" + "', '"+filepath+"', 'c:', '1234', 'mmmmfc92da241694750979ee6cf582f2d5d7d28e18335de05abc54d0560e0f5302860c652bf08d560252aa5e74210546f369fbbbce8c12cfc7957b2652fe9a75',"
+                + " 'm', 'm', CURRENT_TIMESTAMP, '1983-10-10 22:11:02', '1983-01-01 00:11:02', '1983-10-10 22:11:11', '1');";
             MySqlDataReader Reader;
             connection.Open();
             Reader = command.ExecuteReader();
@@ -342,7 +347,10 @@ namespace worker  {
             sqlCon.ConnectionString = sc.getMssqlConStr(); // Connectionstring wird sqlConnection zugewiesen
             sqlCon.Open();  // Verbindung zur Datenbank herstellen
             // Querystring
-            string strSqlQuery = "CREATE TABLE " + sc.getTableName() + "(istFirma nvarchar(256), VIPFlag bit, Kundennummer nvarchar(256), Vorname nvarchar(256), Name nvarchar(256), Firmenname nvarchar(256), Strasse nvarchar(256), PLZ nvarchar(256), Ort nvarchar(256), Teilnehmer nvarchar(1024), PRIMARY KEY (Kundennummer),UNIQUE (Kundennummer))";
+            string strSqlQuery = "CREATE TABLE " + sc.getTableName() 
+                + "(istFirma nvarchar(256), VIPFlag bit, Kundennummer nvarchar(256), Vorname nvarchar(256), Name nvarchar(256), " 
+                + "Firmenname nvarchar(256), Strasse nvarchar(256), PLZ nvarchar(256), Ort nvarchar(256), Teilnehmer nvarchar(1024), "
+                + "PRIMARY KEY (Kundennummer),UNIQUE (Kundennummer))";
             SqlCommand sqlCmd = new SqlCommand(strSqlQuery, sqlCon); // SQLCommand
             int intCheckQuery = sqlCmd.ExecuteNonQuery();
             Console.WriteLine("Tabelle angelegt: " + sc.getTableName() + "\n");
@@ -436,7 +444,13 @@ namespace worker  {
                     FileAppend(logfilename, output + "\n");
 
                     connection.Open();
-                    command.CommandText = "INSERT INTO `" + sc.getDatabase() + "`.`" + sc.getTableName() + "` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" + fi.Name + "', '" + fi.FullName.Replace("\\", "\\\\") + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" + Datei2SHA(fi.FullName)/*"--not computed--"*/ + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" + UnixTime(fi.LastAccessTime) + "', '" + UnixTime(fi.CreationTime) + "', '" + UnixTime(fi.LastWriteTime) + "', '1');";
+                    command.CommandText = "INSERT INTO `" + sc.getDatabase() + "`.`" + sc.getTableName() 
+                        + "` (`name`, `path`, `loc`, `size`, `csum`, `dom`, `owner`, `group`, `stime`, `atime`, `ctime`, `mtime`, `dups`) VALUES ('" 
+                        + fi.Name + "', '" + fi.FullName.Replace("\\", "\\\\") + "', '" + fi.FullName.Split('\\')[0] + "', '" + fi.Length + "', '" 
+                        + Datei2SHA(fi.FullName)/*"--not computed--"*/ + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[0] 
+                        + "', '" + File.GetAccessControl(@fi.FullName).GetOwner(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" 
+                        + File.GetAccessControl(@fi.FullName).GetGroup(typeof(NTAccount)).ToString().Split('\\')[1] + "', '" + UnixTime(DateTime.Now) + "', '" + UnixTime(fi.LastAccessTime) + "', '" 
+                        + UnixTime(fi.CreationTime) + "', '" + UnixTime(fi.LastWriteTime) + "', '1');";
                     MySqlDataReader Reader;
                     Reader = command.ExecuteReader();
                     globalsize += fi.Length;
